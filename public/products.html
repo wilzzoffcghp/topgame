@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Pilih Produk</title>
+    <style>
+        body { font-family: Arial; padding: 20px; }
+        .product { border: 1px solid #ccc; margin: 10px; padding: 10px; border-radius: 8px; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <h1 id="game-name"></h1>
+    <div id="product-list"></div>
+    <script>
+        const params = new URLSearchParams(location.search);
+        const slug = params.get('slug');
+        const gameName = params.get('name');
+        document.getElementById('game-name').innerText = gameName;
+
+        async function loadProducts() {
+            const res = await fetch(`/api/game/${slug}`);
+            const data = await res.json();
+            if (data.success) {
+                const products = data.data.products;
+                const container = document.getElementById('product-list');
+                container.innerHTML = products.map(p => `
+                    <div class="product" onclick="location.href='/confirm.html?slug=${slug}&code=${p.product_code}&name=${encodeURIComponent(p.product_name)}&price=${p.price}'">
+                        <strong>${p.product_name}</strong><br>
+                        Harga asli: Rp${p.price.toLocaleString()} + markup Rp1000<br>
+                        Total: Rp${(p.price + 1000).toLocaleString()}
+                    </div>
+                `).join('');
+            } else {
+                container.innerText = 'Gagal memuat produk.';
+            }
+        }
+        loadProducts();
+    </script>
+</body>
+</html>
