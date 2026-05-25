@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Topup Game</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        body { font-family: Arial; margin: 0; padding: 20px; background: #f0f2f5; }
+        .container { max-width: 800px; margin: auto; background: white; padding: 20px; border-radius: 10px; }
+        button { padding: 8px 16px; margin: 5px; cursor: pointer; }
+        .nav { margin-bottom: 20px; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="nav">
+        <button onclick="location.href='/'">Home</button>
+        <button onclick="location.href='/games.html'">Topup Game</button>
+        <span id="auth-buttons"></span>
+    </div>
+    <h1>Selamat Datang di Topup Center</h1>
+    <p>Topup game dengan harga termurah + markup Rp1.000</p>
+    <div id="user-info"></div>
+</div>
+<script>
+    async function checkLogin() {
+        const res = await fetch('/api/me');
+        if (res.ok) {
+            const data = await res.json();
+            if (data.success) {
+                document.getElementById('auth-buttons').innerHTML = `
+                    <span>Halo, ${data.user.name} | Saldo: Rp${data.user.balance.toLocaleString()}</span>
+                    <button onclick="logout()">Logout</button>
+                    <button onclick="location.href='/dashboard.html'">Dashboard</button>
+                `;
+                return;
+            }
+        }
+        document.getElementById('auth-buttons').innerHTML = `
+            <button onclick="location.href='/login.html'">Login</button>
+            <button onclick="location.href='/register.html'">Register</button>
+        `;
+    }
+    async function logout() {
+        await fetch('/api/logout', {method: 'POST'});
+        location.reload();
+    }
+    checkLogin();
+</script>
+</body>
+</html>
