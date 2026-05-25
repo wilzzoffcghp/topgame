@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Dashboard</title>
+    <style>
+        body { font-family: Arial; padding: 20px; }
+        section { margin-bottom: 30px; border: 1px solid #ddd; padding: 15px; border-radius: 10px; }
+    </style>
+</head>
+<body>
+    <h1>Dashboard</h1>
+    <section>
+        <h2>Saldo Anda: Rp<span id="balance">0</span></h2>
+        <button onclick="location.href='/deposit.html'">Deposit QRIS</button>
+        <button id="resellerBtn" onclick="joinReseller()">Join Reseller (Rp15.000)</button>
+        <div id="apiKeyDisplay"></div>
+    </section>
+    <section>
+        <h2>Riwayat Transaksi</h2>
+        <div id="transactions"></div>
+    </section>
+    <script>
+        async function loadDashboard() {
+            const me = await fetch('/api/me');
+            const userData = await me.json();
+            if (userData.success) {
+                document.getElementById('balance').innerText = userData.user.balance.toLocaleString();
+                if (userData.user.apiKey) {
+                    document.getElementById('apiKeyDisplay').innerHTML = `<p><strong>API Key Anda:</strong> ${userData.user.apiKey}</p>`;
+                    document.getElementById('resellerBtn').disabled = true;
+                }
+            }
+            const transRes = await fetch('/api/transactions');
+            const transData = await transRes.json();
+            if (transData.success) {
+                const tbody = document.getElementById('transactions');
+                if (transData.transactions.length === 0) {
+                    tbody.innerHTML = '<p>Belum ada transaksi.</p>';
+                } else {
+                    tbody.innerHTML = '<table border="1" cellpadding="5"><tr><th>ID</th><th>Produk</th><th>Target</th><th>Harga</th><th>Status</th></tr>' +
+                        transData.transactions.map(t => `<tr><td>${t.id}</td><td>${t.product_name}</td><td>${t.target}</td><td>Rp${t.price.toLocaleString()}</td><td>${t.status}</td></tr>`).join('') + '</table>';
+                }
+            }
+        }
+        async function joinReseller() {
+            const res = await fetch('/api/reseller/join', {method: 'POST'});
+            const data = await res.json();
+            if (data.success) {
+                alert(`Anda sekarang reseller! API Key: ${data.apiKey}`);
+                location.reload();
+            } else {
+                alert('Gagal: ' + data.error);
+            }
+        }
+        loadDashboard();
+    </script>
+</body>
+</html>
