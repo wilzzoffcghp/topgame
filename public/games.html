@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Pilih Game</title>
+    <style>
+        body { font-family: Arial; padding: 20px; background: #f0f2f5; }
+        .game-card { background: white; margin: 10px; padding: 15px; border-radius: 10px; display: inline-block; width: 200px; text-align: center; cursor: pointer; }
+        .game-card img { width: 80px; height: 80px; object-fit: cover; }
+    </style>
+</head>
+<body>
+    <h1>Daftar Game</h1>
+    <div id="game-list"></div>
+    <script>
+        async function loadGames() {
+            const res = await fetch('/api/games');
+            const data = await res.json();
+            if (data.success) {
+                const container = document.getElementById('game-list');
+                container.innerHTML = data.data.map(game => `
+                    <div class="game-card" onclick="location.href='/products.html?slug=${game.game_slug}&name=${encodeURIComponent(game.game_name)}'">
+                        <img src="${game.icon_url}" onerror="this.src='https://via.placeholder.com/80'">
+                        <h3>${game.game_name}</h3>
+                    </div>
+                `).join('');
+            } else {
+                document.getElementById('game-list').innerText = 'Gagal memuat game.';
+            }
+        }
+        loadGames();
+    </script>
+</body>
+</html>
