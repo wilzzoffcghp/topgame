@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Konfirmasi Order</title>
+    <style>
+        body { font-family: Arial; padding: 20px; }
+        input, button { padding: 8px; margin: 5px; }
+    </style>
+</head>
+<body>
+    <h1>Konfirmasi Order</h1>
+    <div id="product-info"></div>
+    <label>User ID / Target:</label><input type="text" id="target" required><br>
+    <label>Zone ID (jika ada):</label><input type="text" id="zone"><br>
+    <button onclick="order()">Bayar dan Topup</button>
+    <div id="result"></div>
+    <script>
+        const params = new URLSearchParams(location.search);
+        const slug = params.get('slug');
+        const code = params.get('code');
+        const productName = decodeURIComponent(params.get('name'));
+        const originalPrice = parseInt(params.get('price'));
+        const totalPrice = originalPrice + 1000;
+        document.getElementById('product-info').innerHTML = `
+            <p>Produk: ${productName}</p>
+            <p>Harga Asli: Rp${originalPrice.toLocaleString()}</p>
+            <p>Markup: Rp1000</p>
+            <p><strong>Total: Rp${totalPrice.toLocaleString()}</strong></p>
+        `;
+        async function order() {
+            const target = document.getElementById('target').value;
+            const zone = document.getElementById('zone').value;
+            if (!target) return alert('User ID wajib diisi');
+            const res = await fetch('/api/order', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ product_code: code, slug, target, target_zone: zone })
+            });
+            const data = await res.json();
+            if (data.success) {
+                document.getElementById('result').innerHTML = `<p style="color:green">Order berhasil! ID: ${data.order.order_id}</p>`;
+                setTimeout(() => location.href = '/dashboard.html', 2000);
+            } else {
+                document.getElementById('result').innerHTML = `<p style="color:red">Gagal: ${data.error}</p>`;
+            }
+        }
+    </script>
+</body>
+</html>
